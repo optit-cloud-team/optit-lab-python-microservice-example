@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+      
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    git branch: 'main',
+                        credentialsId: 'rajath-my-git-pat',
+                        url: 'https://github.com/rajath-optit/optit-lab-springmvc-example.git'
+                }
+            }
+        }
+  
+    stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        sh 'kubectl apply -f k8s/namespace.yaml'
+                        sh 'kubectl apply -f k8s/producer/deployment.yaml'
+                        sh 'kubectl apply -f k8s/producer/service.yaml'
+                        sh 'kubectl apply -f k8s/consumer_one/deployment.yaml'
+                        sh 'kubectl apply -f k8s/consumer_one/service.yaml'
+                        sh 'kubectl apply -f k8s/consumer_two/deployment.yaml'
+                        sh 'kubectl apply -f k8s/consumer_two/service.yaml'
+                        sh 'kubectl apply -f k8s/consumer_three/deployment.yaml'
+                        sh 'kubectl apply -f k8s/consumer_three/service.yaml'
+                        sh 'kubectl apply -f k8s/consumer_four/deployment.yaml'
+                        sh 'kubectl apply -f k8s/consumer_four/service.yaml'
+                        sh 'kubectl apply -f k8s/mysql/deployment.yaml'
+                        sh 'kubectl apply -f k8s/mysql/service.yaml'
+                    }
+                }
+            }
+        }
+    }
+}
