@@ -26,11 +26,10 @@ pipeline {
                 stage('Build Consumer One') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-one", "-f consumer_one/Dockerfile .")
-                            // Tag the Docker image with build ID and push
-                            docker.image("bharathoptdocker/python-consumer-one").tag("${env.BUILD_ID}").push()
-                            // Tag the Docker image as latest and push
-                            docker.image("bharathoptdocker/python-consumer-one").tag("latest").push()
+                            dir('consumer_one') {
+                                sh 'pwd'
+                                docker.build("bharathoptdocker/python-consumer-one", ".")
+                            }
                         }
                     }
                 }
@@ -38,9 +37,9 @@ pipeline {
                 stage('Build Consumer Two') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-two", "-f consumer_two/Dockerfile .")
-                            docker.image("bharathoptdocker/python-consumer-two").tag("${env.BUILD_ID}").push()
-                            docker.image("bharathoptdocker/python-consumer-two").tag("latest").push()
+                            dir('consumer_two') {
+                                docker.build("bharathoptdocker/python-consumer-two", ".")
+                            }
                         }
                     }
                 }
@@ -48,9 +47,9 @@ pipeline {
                 stage('Build Consumer Three') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-three", "-f consumer_three/Dockerfile .")
-                            docker.image("bharathoptdocker/python-consumer-three").tag("${env.BUILD_ID}").push()
-                            docker.image("bharathoptdocker/python-consumer-three").tag("latest").push()
+                            dir('consumer_three') {
+                                docker.build("bharathoptdocker/python-consumer-three", ".")
+                            }
                         }
                     }
                 }
@@ -58,9 +57,9 @@ pipeline {
                 stage('Build Consumer Four') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-four", "-f consumer_four/Dockerfile .")
-                            docker.image("bharathoptdocker/python-consumer-four").tag("${env.BUILD_ID}").push()
-                            docker.image("bharathoptdocker/python-consumer-four").tag("latest").push()
+                            dir('consumer_four') {
+                                docker.build("bharathoptdocker/python-consumer-four", ".")
+                            }
                         }
                     }
                 }
@@ -68,10 +67,10 @@ pipeline {
                 stage('Build Producer') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-producer", "-f producer/Dockerfile .")
-                            docker.image("bharathoptdocker/python-producer").tag("${env.BUILD_ID}").push()
-                            docker.image("bharathoptdocker/python-producer").tag("latest").push()
-                            sh 'docker ps'
+                            dir('producer') {
+                                docker.build("bharathoptdocker/python-producer", ".")
+                                sh 'docker ps'
+                            }
                         }
                     }
                 }
@@ -102,17 +101,31 @@ pipeline {
                         serviceList.each { service ->
                             if (service in ['rabbitmq', 'mysql_db']) {
                                 echo "Skipping ${service} service"
-                            } else {
-                                // Publish Docker images for the service
-                                def buildId = env.BUILD_ID
-                                def imageName = "bharathoptdocker/python-${service}"
-                                def imageNameWithTag = "${imageName}:${buildId}"
-                                def imageNameWithLatest = "${imageName}:latest"
+                                return
+                            }
+                            
+                            stage('Docker Publish') {
+                                steps {
+                                    script {
+                                        withCredentials([usernamePassword(credentialsId: 'docker-creds-id', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                            sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
 
-                                sh "docker tag ${imageName} ${imageNameWithTag}"
-                                sh "docker push ${imageNameWithTag}"
-                                sh "docker tag ${imageName} ${imageNameWithLatest}"
-                                sh "docker push ${imageNameWithLatest}"
+                                            def services = ['consumer_one', 'consumer_two', 'consumer_three', 'consumer_four', 'producer']
+                                            def buildId = env.BUILD_ID
+
+                                            for (serviceName in services) {
+                                                def imageName = "bharathoptdocker/python-${serviceName}"
+                                                def imageNameWithTag = "${imageName}:${buildId}"
+                                                def imageNameWithLatest = "${imageName}:latest"
+
+                                                sh "docker tag ${imageName} ${imageNameWithTag}"
+                                                sh "docker push ${imageNameWithTag}"
+                                                sh "docker tag ${imageName} ${imageNameWithLatest}"
+                                                sh "docker push ${imageNameWithLatest}"
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
