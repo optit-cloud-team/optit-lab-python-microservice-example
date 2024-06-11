@@ -11,15 +11,14 @@ pipeline {
                 }
             }
         }
-        
-        stage('Build and Push Docker Images') {
+
+        stage('Build Docker Images') {
             steps {
                 script {
-                    docker.build("raorajath/python-producer:latest", "./producer")
-                    docker.build("raorajath/python-consumer-one:latest", "./consumer_one")
-                    docker.build("raorajath/python-consumer-two:latest", "./consumer_two")
-                    docker.build("raorajath/python-consumer-three:latest", "./consumer_three")
-                    docker.build("raorajath/python-consumer-four:latest", "./consumer_four")
+                    def services = ['producer', 'consumer_one', 'consumer_two', 'consumer_three', 'consumer_four']
+                    services.each { service ->
+                        docker.build("raorajath/python-${service}:latest", "./${service}")
+                    }
                 }
             }
         }
@@ -33,8 +32,7 @@ pipeline {
                 sh 'docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d'
             }
         }
-    }
-}
+
         stage('Docker Publish') {
             steps {
                 script {
@@ -58,9 +56,8 @@ pipeline {
                             sh "docker push ${imageNameWithTag}"
 
                             // Tag and push the image as latest
-                            def imageNameWithLatest = "${imageName}"
-                            sh "docker tag ${imageName} ${imageNameWithLatest}"
-                            sh "docker push ${imageNameWithLatest}"
+                            sh "docker tag ${imageName} ${imageName}"
+                            sh "docker push ${imageName}"
                         }
                     }
                 }
