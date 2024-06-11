@@ -19,6 +19,7 @@ pipeline {
                 
                 // Deploy the application using Docker Compose
                 sh 'docker-compose -f docker-compose.yml up -d'
+                sh 'docker ps'
             }
         }
 
