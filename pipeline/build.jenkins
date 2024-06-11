@@ -39,9 +39,11 @@ pipeline {
                                 return
                             }
                             
+                            // Build the Docker image with the latest tag
+                            sh "docker-compose -f docker-compose.yml build --no-cache ${service}"
+                            
                             // Tag and push the image with the build ID and latest tag
                             sh """
-                                docker-compose -f docker-compose.yml build ${service}
                                 docker tag ${service} bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}
                                 docker push bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}
                                 
