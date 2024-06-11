@@ -33,7 +33,12 @@ pipeline {
                         def services = sh(script: 'docker-compose -f docker-compose.yml config --services', returnStdout: true).trim().split('\n')
 
                         services.each { service ->
-                            def latestImage = "${service}:latest"
+                            if (service in ['rabbitmq', 'mysql_db']) {
+                                echo "Skipping ${service} service"
+                                return
+                            }
+                            
+                            def latestImage = "${service}"
                             def newImageNameWithTag = "bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}"
 
                             // Tag and push the image with the build ID and latest tag
