@@ -27,6 +27,7 @@ pipeline {
                     steps {
                         script {
                             dir('consumer_one') {
+                                sh 'pwd'
                                 docker.build("bharathoptdocker/python-consumer-one", ".")
                             }
                         }
