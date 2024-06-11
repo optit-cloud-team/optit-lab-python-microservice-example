@@ -28,7 +28,7 @@ pipeline {
                         script {
                          
                             def imageName = "bharathoptdocker/python-consumer-one"
-                            def imageName = "bharathoptdocker/python-consumer-one"
+                            
                             def dockerfilePath = "consumer_one/Dockerfile"
                             
                             // Build the Docker image
