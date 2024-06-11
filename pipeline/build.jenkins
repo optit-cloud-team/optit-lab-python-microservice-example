@@ -15,6 +15,7 @@ pipeline {
         stage('Build and Push Docker Images') {
             steps {
                 script {
+                    sh 'pwd'
                     docker.build("raorajath/python-producer:latest", "./producer")
                     docker.build("raorajath/python-consumer-one:latest", "./consumer_one")
                     docker.build("raorajath/python-consumer-two:latest", "./consumer_two")
