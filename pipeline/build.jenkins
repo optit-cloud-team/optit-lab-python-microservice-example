@@ -12,6 +12,19 @@ pipeline {
             }
         }
 
+        stage('Build Images') {
+            steps {
+                script {
+                    sh 'pwd'
+                    docker.build("bharathoptdocker/python-producer:latest", "producer")
+                    docker.build("bharathoptdocker/python-consumer-one:latest", "consumer_one")
+                    docker.build("bharathoptdocker/python-consumer-two:latest", "consumer_two")
+                    docker.build("bharathoptdocker/python-consumer-three:latest", "consumer_three")
+                    docker.build("bharathoptdocker/python-consumer-four:latest", "consumer_four")
+                }
+            }
+        }
+
         stage('Deploy with Docker Compose') {
             steps {
                 // Ensure Docker Compose is installed
