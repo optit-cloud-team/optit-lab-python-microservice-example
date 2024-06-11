@@ -4,10 +4,10 @@ WORKDIR /app
 
 # Copy the requirements.txt file into the Docker image
 COPY ./consumer_one .
-COPY ./consumer_one/requirements.txt .
+
 
 # Install dependencies
-RUN pip install -r requirements.txt
+RUN pip install -r consumer_one/requirements.txt
 
 # Copy the rest of the application code
 
