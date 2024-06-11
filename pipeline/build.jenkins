@@ -16,7 +16,7 @@ pipeline {
             steps {
                 script {
                     sh 'pwd'
-                    docker.build("raorajath/python-producer:latest", "./producer")
+                    docker.build("raorajath/python-producer:latest", "/producer")
                     docker.build("raorajath/python-consumer-one:latest", "./consumer_one")
                     docker.build("raorajath/python-consumer-two:latest", "./consumer_two")
                     docker.build("raorajath/python-consumer-three:latest", "./consumer_three")
