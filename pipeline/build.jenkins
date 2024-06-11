@@ -30,24 +30,26 @@ pipeline {
                         sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
                         
                         // Define images to push
-                        def images = [
-                            "bharathoptdocker/python-producer:latest",
-                            "bharathoptdocker/python-consumer-one:latest",
-                            "bharathoptdocker/python-consumer-two:latest",
-                            "bharathoptdocker/python-consumer-three:latest",
-                            "bharathoptdocker/python-consumer-four:latest"
+                        def services = [
+                            "python-producer",
+                            "python-consumer-one",
+                            "python-consumer-two",
+                            "python-consumer-three",
+                            "python-consumer-four"
                         ]
+                        
+                        services.each { service ->
+                            def latestImage = "${service}:latest"
+                            def newImageNameWithTag = "bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}"
 
-                        images.each { imageName ->
-                            // Tag and push the image with the build ID
-                            def imageNameWithTag = "${imageName.replace(':latest', '')}:${env.BUILD_ID}"
+                            // Tag and push the image with the build ID and latest tag
                             sh """
-                                docker tag ${imageName} ${imageNameWithTag}
-                                docker push ${imageNameWithTag}
+                                docker-compose -f docker-compose.yml -f docker-compose.override.yml build ${service}
+                                docker tag ${latestImage} ${newImageNameWithTag}
+                                docker push ${newImageNameWithTag}
                                 
-                                // Tag and push the image as latest
-                                docker tag ${imageName} ${imageName}
-                                docker push ${imageName}
+                                docker tag ${latestImage} bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
+                                docker push bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
                             """
                         }
                     }
