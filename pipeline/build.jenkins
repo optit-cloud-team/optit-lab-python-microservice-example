@@ -22,35 +22,40 @@ pipeline {
             }
         }
 
-        stage('Docker Publish') {
-            steps {
-                script {
-                    // Docker login using credentials
-                    withCredentials([usernamePassword(credentialsId: 'bkdockerid', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-
-                        // Define images to push
-                        def images = [
-                            "raorajath/python-producer:latest",
-                            "raorajath/python-consumer-one:latest",
-                            "raorajath/python-consumer-two:latest",
-                            "raorajath/python-consumer-three:latest",
-                            "raorajath/python-consumer-four:latest"
-                        ]
-
-                        images.each { imageName ->
-                            // Tag and push the image with the build ID
-                            def imageNameWithTag = "${imageName.replace(':latest', '')}:${env.BUILD_ID}"
-                            sh "docker tag ${imageName} ${imageNameWithTag}"
-                            sh "docker push ${imageNameWithTag}"
-
-                            // Tag and push the image as latest
-                            sh "docker tag ${imageName} ${imageName}"
-                            sh "docker push ${imageName}"
+            pipeline {
+                agent any
+                stages {
+                    stage('Docker Publish') {
+                        steps {
+                            script {
+                                // Docker login using credentials
+                                withCredentials([usernamePassword(credentialsId: 'bkdockerid', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                    sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+                                    
+                                    // Define images to push
+                                    def images = [
+                                        "bharathoptdocker/python-producer:latest",
+                                        "bharathoptdocker/python-consumer-one:latest",
+                                        "bharathoptdocker/python-consumer-two:latest",
+                                        "bharathoptdocker/python-consumer-three:latest",
+                                        "bharathoptdocker/python-consumer-four:latest"
+                                    ]
+            
+                                    images.each { imageName ->
+                                        // Tag and push the image with the build ID
+                                        def imageNameWithTag = "${imageName.replace(':latest', '')}:${env.BUILD_ID}"
+                                        sh """
+                                            docker tag ${imageName} ${imageNameWithTag}
+                                            docker push ${imageNameWithTag}
+                                            
+                                            // Tag and push the image as latest
+                                            docker tag ${imageName} ${imageName}
+                                            docker push ${imageName}
+                                        """
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-    }
-}
