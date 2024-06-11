@@ -12,13 +12,14 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build and Push Docker Images') {
             steps {
                 script {
-                    def services = ['producer', 'consumer_one', 'consumer_two', 'consumer_three', 'consumer_four']
-                    services.each { service ->
-                        docker.build("raorajath/python-${service}:latest", "./${service}")
-                    }
+                    docker.build("raorajath/python-producer:latest", "./producer")
+                    docker.build("raorajath/python-consumer-one:latest", "./consumer_one")
+                    docker.build("raorajath/python-consumer-two:latest", "./consumer_two")
+                    docker.build("raorajath/python-consumer-three:latest", "./consumer_three")
+                    docker.build("raorajath/python-consumer-four:latest", "./consumer_four")
                 }
             }
         }
