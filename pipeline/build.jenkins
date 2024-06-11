@@ -26,7 +26,8 @@ pipeline {
                 stage('Build Consumer One') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-one", "-f consumer_one/Dockerfile .")
+                            docker.build("bharathoptdocker/    
+                            python-consumer_one", "-f consumer_one/Dockerfile .")
                         }
                     }
                 }
@@ -34,7 +35,7 @@ pipeline {
                 stage('Build Consumer Two') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-two", "-f consumer_two/Dockerfile .")
+                            docker.build("bharathoptdocker/python-consumer_two", "-f consumer_two/Dockerfile .")
                         }
                     }
                 }
@@ -42,7 +43,7 @@ pipeline {
                 stage('Build Consumer Three') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-three", "-f consumer_three/Dockerfile .")
+                            docker.build("bharathoptdocker/python-consumer_three", "-f consumer_three/Dockerfile .")
                         }
                     }
                 }
@@ -50,7 +51,7 @@ pipeline {
                 stage('Build Consumer Four') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-four", "-f consumer_four/Dockerfile .")
+                            docker.build("bharathoptdocker/python-consumer_four", "-f consumer_four/Dockerfile .")
                         }
                     }
                 }
@@ -58,7 +59,7 @@ pipeline {
                 stage('Build Producer') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-producer", "-f producer/Dockerfile .")
+                            docker.build("bharathoptdocker/python_producer", "-f producer/Dockerfile .")
                             sh 'docker ps'
                         }
                     }
