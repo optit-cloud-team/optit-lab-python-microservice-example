@@ -1,6 +1,6 @@
 pipeline {
     agent any
-     
+
     stages {
         stage('Checkout') {
             steps {
@@ -26,14 +26,11 @@ pipeline {
                 stage('Build Consumer One') {
                     steps {
                         script {
-                            def consumerOneImageName = "bharathoptdocker/python-consumer-one"
-                            def consumerOneDockerfilePath = "consumer_one/Dockerfile"
-                            
-                            // Build the Docker image
-                            docker.build(consumerOneImageName, "-f ${consumerOneDockerfilePath} .")
-                            
-                            // Tag the Docker image
-                            docker.tag(consumerOneImageName, "latest")
+                            docker.build("bharathoptdocker/python-consumer-one", "-f consumer_one/Dockerfile .")
+                            // Tag the Docker image with build ID and push
+                            docker.image("bharathoptdocker/python-consumer-one").tag("${env.BUILD_ID}").push()
+                            // Tag the Docker image as latest and push
+                            docker.image("bharathoptdocker/python-consumer-one").tag("latest").push()
                         }
                     }
                 }
@@ -41,14 +38,9 @@ pipeline {
                 stage('Build Consumer Two') {
                     steps {
                         script {
-                            def consumerTwoImageName = "bharathoptdocker/python-consumer-two"
-                            def consumerTwoDockerfilePath = "consumer_two/Dockerfile"
-                            
-                            // Build the Docker image
-                            docker.build(consumerTwoImageName, "-f ${consumerTwoDockerfilePath} .")
-                            
-                            // Tag the Docker image
-                            docker.tag(consumerTwoImageName, "latest")
+                            docker.build("bharathoptdocker/python-consumer-two", "-f consumer_two/Dockerfile .")
+                            docker.image("bharathoptdocker/python-consumer-two").tag("${env.BUILD_ID}").push()
+                            docker.image("bharathoptdocker/python-consumer-two").tag("latest").push()
                         }
                     }
                 }
@@ -56,14 +48,9 @@ pipeline {
                 stage('Build Consumer Three') {
                     steps {
                         script {
-                            def consumerThreeImageName = "bharathoptdocker/python-consumer-three"
-                            def consumerThreeDockerfilePath = "consumer_three/Dockerfile"
-                            
-                            // Build the Docker image
-                            docker.build(consumerThreeImageName, "-f ${consumerThreeDockerfilePath} .")
-                            
-                            // Tag the Docker image
-                            docker.tag(consumerThreeImageName, "latest")
+                            docker.build("bharathoptdocker/python-consumer-three", "-f consumer_three/Dockerfile .")
+                            docker.image("bharathoptdocker/python-consumer-three").tag("${env.BUILD_ID}").push()
+                            docker.image("bharathoptdocker/python-consumer-three").tag("latest").push()
                         }
                     }
                 }
@@ -71,14 +58,9 @@ pipeline {
                 stage('Build Consumer Four') {
                     steps {
                         script {
-                            def consumerFourImageName = "bharathoptdocker/python-consumer-four"
-                            def consumerFourDockerfilePath = "consumer_four/Dockerfile"
-                            
-                            // Build the Docker image
-                            docker.build(consumerFourImageName, "-f ${consumerFourDockerfilePath} .")
-                            
-                            // Tag the Docker image
-                            docker.tag(consumerFourImageName, "latest")
+                            docker.build("bharathoptdocker/python-consumer-four", "-f consumer_four/Dockerfile .")
+                            docker.image("bharathoptdocker/python-consumer-four").tag("${env.BUILD_ID}").push()
+                            docker.image("bharathoptdocker/python-consumer-four").tag("latest").push()
                         }
                     }
                 }
@@ -86,14 +68,9 @@ pipeline {
                 stage('Build Producer') {
                     steps {
                         script {
-                            def pythonProduceImageName = "bharathoptdocker/python-producer"
-                            def pythonProduceDockerfilePath = "producer/Dockerfile"
-                            
-                            // Build the Docker image
-                            docker.build(pythonProduceImageName, "-f ${pythonProduceDockerfilePath} .")
-                            
-                            // Tag the Docker image
-                            docker.tag(pythonProduceImageName, "latest")
+                            docker.build("bharathoptdocker/python-producer", "-f producer/Dockerfile .")
+                            docker.image("bharathoptdocker/python-producer").tag("${env.BUILD_ID}").push()
+                            docker.image("bharathoptdocker/python-producer").tag("latest").push()
                             sh 'docker ps'
                         }
                     }
