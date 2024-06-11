@@ -2,8 +2,8 @@ FROM python
 
 WORKDIR /app
 
-COPY ./consumer_one .
+COPY . .
+
 RUN pip install -r requirements.txt
 
-
-CMD [ "python", "healthcheck.py" ]
+CMD ["python", "healthcheck.py"]
