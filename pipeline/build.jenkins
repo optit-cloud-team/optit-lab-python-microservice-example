@@ -38,16 +38,13 @@ pipeline {
                                 return
                             }
                             
-                            def latestImage = "${service}"
-                            def newImageNameWithTag = "bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}"
-
                             // Tag and push the image with the build ID and latest tag
                             sh """
                                 docker-compose -f docker-compose.yml build ${service}
-                                docker tag ${latestImage} ${newImageNameWithTag}
-                                docker push ${newImageNameWithTag}
+                                docker tag ${service} bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}
+                                docker push bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}
                                 
-                                docker tag ${latestImage} bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
+                                docker tag ${service} bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
                                 docker push bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
                             """
                         }
