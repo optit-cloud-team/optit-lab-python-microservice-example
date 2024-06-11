@@ -2,8 +2,14 @@ FROM python
 
 WORKDIR /app
 
-COPY . .
+# Copy the requirements.txt file into the Docker image
+COPY requirements.txt .
 
+# Install dependencies
 RUN pip install -r requirements.txt
 
-CMD ["python", "healthcheck.py"]
+# Copy the rest of the application code
+COPY . .
+
+# Specify the command to run the application
+CMD [ "python", "healthcheck.py" ]
