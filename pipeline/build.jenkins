@@ -26,7 +26,16 @@ pipeline {
                 stage('Build Consumer One') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-one", "-f consumer_one/Dockerfile .")
+                         
+                            def imageName = "bharathoptdocker/python-consumer-one"
+                            def imageName = "bharathoptdocker/python-consumer-one"
+                            def dockerfilePath = "consumer_one/Dockerfile"
+                            
+                            // Build the Docker image
+                            docker.build(imageName, "-f ${dockerfilePath} .")
+                            
+                            // Tag the Docker image
+                            docker.tag(imageName, "latest")
                         }
                     }
                 }
@@ -34,7 +43,16 @@ pipeline {
                 stage('Build Consumer Two') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-two", "-f consumer_two/Dockerfile .")
+                          
+                            def imageName = "bharathoptdocker/python-consumer-two"
+                            
+                            def dockerfilePath = "python-consumer-two/Dockerfile"
+                            
+                            // Build the Docker image
+                            docker.build(imageName, "-f ${dockerfilePath} .")
+                            
+                            // Tag the Docker image
+                            docker.tag(imageName, "latest")
                         }
                     }
                 }
@@ -42,7 +60,16 @@ pipeline {
                 stage('Build Consumer Three') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-three", "-f consumer_three/Dockerfile .")
+                                                       
+                            def imageName = "bharathoptdocker/python-consumer-three"
+                            
+                            def dockerfilePath = "python-consumer-three/Dockerfile"
+                            
+                            // Build the Docker image
+                            docker.build(imageName, "-f ${dockerfilePath} .")
+                            
+                            // Tag the Docker image
+                            docker.tag(imageName, "latest")
                         }
                     }
                 }
@@ -50,7 +77,16 @@ pipeline {
                 stage('Build Consumer Four') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer-four", "-f consumer_four/Dockerfile .")
+                           
+                            def imageName = "bharathoptdocker/python-consumer-four"
+                            
+                            def dockerfilePath = "python-consumer-four/Dockerfile"
+                            
+                            // Build the Docker image
+                            docker.build(imageName, "-f ${dockerfilePath} .")
+                            
+                            // Tag the Docker image
+                            docker.tag(imageName, "latest")
                         }
                     }
                 }
@@ -58,7 +94,16 @@ pipeline {
                 stage('Build Producer') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-producer", "-f producer/Dockerfile .")
+                            
+                             def imageName = "bharathoptdocker/python-producer"
+                            
+                            def dockerfilePath = "python-producerr/Dockerfile"
+                            
+                            // Build the Docker image
+                            docker.build(imageName, "-f ${dockerfilePath} .")
+                            
+                            // Tag the Docker image
+                            docker.tag(imageName, "latest")
                             sh 'docker ps'
                         }
                     }
