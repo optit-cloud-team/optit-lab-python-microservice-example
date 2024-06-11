@@ -95,9 +95,9 @@ pipeline {
                         sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                         
                         // Get the list of services from the Docker Compose file
-                        def services = sh(script: 'docker-compose -f docker-compose.yml config --services', returnStdout: true).trim().split('\n')
+                        def serviceList = sh(script: 'docker-compose -f docker-compose.yml config --services', returnStdout: true).trim().split('\n')
 
-                        services.each { service ->
+                        serviceList.each { service ->
                             if (service in ['rabbitmq', 'mysql_db']) {
                                 echo "Skipping ${service} service"
                                 return
@@ -112,8 +112,8 @@ pipeline {
                                             def services = ['consumer_one', 'consumer_two', 'consumer_three', 'consumer_four', 'producer']
                                             def buildId = env.BUILD_ID
 
-                                            for (service in services) {
-                                                def imageName = "bharathoptdocker/python-${service}"
+                                            for (serviceName in services) {
+                                                def imageName = "bharathoptdocker/python-${serviceName}"
                                                 def imageNameWithTag = "${imageName}:${buildId}"
                                                 def imageNameWithLatest = "${imageName}:latest"
 
