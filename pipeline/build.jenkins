@@ -16,11 +16,62 @@ pipeline {
             steps {
                 script {
                     sh 'pwd'
-                    docker.build("bharathoptdocker/python-producer:latest", "producer")
-                    docker.build("bharathoptdocker/python-consumer-one:latest", "consumer_one")
-                    docker.build("bharathoptdocker/python-consumer-two:latest", "consumer_two")
-                    docker.build("bharathoptdocker/python-consumer-three:latest", "consumer_three")
-                    docker.build("bharathoptdocker/python-consumer-four:latest", "consumer_four")
+                    sh 'docker ps'
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            parallel {
+                stage('Build Consumer One') {
+                    steps {
+                        script {
+                            dir('consumer_one') {
+                                docker.build("bharathoptdocker/python-consumer-one", ".")
+                            }
+                        }
+                    }
+                }
+                
+                stage('Build Consumer Two') {
+                    steps {
+                        script {
+                            dir('consumer_two') {
+                                docker.build("bharathoptdocker/python-consumer-two", ".")
+                            }
+                        }
+                    }
+                }
+                
+                stage('Build Consumer Three') {
+                    steps {
+                        script {
+                            dir('consumer_three') {
+                                docker.build("bharathoptdocker/python-consumer-three", ".")
+                            }
+                        }
+                    }
+                }
+                
+                stage('Build Consumer Four') {
+                    steps {
+                        script {
+                            dir('consumer_four') {
+                                docker.build("bharathoptdocker/python-consumer-four", ".")
+                            }
+                        }
+                    }
+                }
+                
+                stage('Build Producer') {
+                    steps {
+                        script {
+                            dir('producer') {
+                                docker.build("bharathoptdocker/python-producer", ".")
+                                sh 'docker ps'
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -52,17 +103,29 @@ pipeline {
                                 return
                             }
                             
-                            // Build the Docker image with the latest tag
-                            sh "docker-compose -f docker-compose.yml build --no-cache ${service}"
-                            
-                            // Tag and push the image with the build ID and latest tag
-                            sh """
-                                docker tag ${service} bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}
-                                docker push bharathoptdocker/optit-lab-python-microservice-example:${service}-${env.BUILD_ID}
-                                
-                                docker tag ${service} bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
-                                docker push bharathoptdocker/optit-lab-python-microservice-example:${service}-latest
-                            """
+                            stage('Docker Publish') {
+                                steps {
+                                    script {
+                                        withCredentials([usernamePassword(credentialsId: 'docker-creds-id', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                            sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+
+                                            def services = ['consumer_one', 'consumer_two', 'consumer_three', 'consumer_four', 'producer']
+                                            def buildId = env.BUILD_ID
+
+                                            for (service in services) {
+                                                def imageName = "bharathoptdocker/python-${service}"
+                                                def imageNameWithTag = "${imageName}:${buildId}"
+                                                def imageNameWithLatest = "${imageName}:latest"
+
+                                                sh "docker tag ${imageName} ${imageNameWithTag}"
+                                                sh "docker push ${imageNameWithTag}"
+                                                sh "docker tag ${imageName} ${imageNameWithLatest}"
+                                                sh "docker push ${imageNameWithLatest}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
