@@ -6,7 +6,7 @@ pipeline {
             steps {
                 script {
                     git branch: 'main',
-                        credentialsId: 'rajath-my-git-pat',
+                        credentialsId: 'bharath',
                         url: 'https://github.com/rajath-optit/optit-lab-springmvc-example.git'
                 }
             }
