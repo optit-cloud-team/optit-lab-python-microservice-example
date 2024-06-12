@@ -7,7 +7,7 @@ pipeline {
                 script {
                     git branch: 'main',
                         credentialsId: 'bharath',
-                        url: 'https://github.com/rajath-optit/optit-lab-springmvc-example.git'
+                        url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
             }
         }
