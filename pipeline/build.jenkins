@@ -20,9 +20,9 @@ pipeline {
                         sh "kubectl apply -f recipes/kubernetes/manifest/mysql/mysql-secret.yaml"
 
                         // Deploy other resources as needed
-                        sh "kubectl apply -f /kubernetes/manifest/mysql/mysql-storage.yaml"
-                        sh "kubectl apply -f /kubernetes/manifest/mysql/deployment.yaml -n spring-example"
-                        sh "kubectl apply -f /kubernetes/manifest/mysql/service.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifest/mysql/mysql-storage.yaml"
+                        sh "kubectl apply -f kubernetes/manifest/mysql/deployment.yaml -n spring-example"
+                        sh "kubectl apply -f kubernetes/manifest/mysql/service.yaml -n spring-example"
 
                         sh 'kubectl get pods'
                         sh 'kubectl get svc mysql'
