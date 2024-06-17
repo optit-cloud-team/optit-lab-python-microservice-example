@@ -17,7 +17,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
                         // Deploy MySQL Secret
-                        sh "kubectl apply -f recipes/kubernetes/manifest/mysql/mysql-secret.yaml"
+                        sh "kubectl apply -f kubernetes/manifest/mysql/mysql-secret.yaml"
 
                         // Deploy other resources as needed
                         sh "kubectl apply -f kubernetes/manifest/mysql/mysql-storage.yaml"
