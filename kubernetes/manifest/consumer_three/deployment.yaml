@@ -18,4 +18,3 @@ spec:
           image: bharathoptdocker/python-consumer-three:latest
           ports:
             - containerPort: 5000
----
