@@ -15,7 +15,6 @@ spec:
     spec:
       containers:
         - name: consumer-four
-          image: raorajath/python-consumer-four:latest
+          image: b/python-consumer-four:latest
           ports:
             - containerPort: 5000
----
