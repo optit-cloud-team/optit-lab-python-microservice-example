@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: consumer-four
-          image: b/python-consumer-four:latest
+          image: bharathoptdocker/python-consumer-four:latest
           ports:
             - containerPort: 5000
