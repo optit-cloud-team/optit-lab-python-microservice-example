@@ -12,6 +12,22 @@ pipeline {
             }
         }
 
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Deploy MySQL Secret
+                        sh "kubectl apply -f kubernetes/manifest/mysql/mysql-secret.yaml -n my-namespace"
+
+                        // Deploy other resources as needed
+                        sh "kubectl apply -f kubernetes/manifest/mysql/mysql-storage.yaml -n my-namespace"
+                        sh "kubectl apply -f kubernetes/manifest/mysql/deployment.yaml -n my-namespace"
+                        sh "kubectl apply -f kubernetes/manifest/mysql/service.yaml -n my-namespace"
+                    }
+                }
+            }
+        }
+
         stage('Build Images') {
             steps {
                 script {
@@ -59,7 +75,6 @@ pipeline {
                     steps {
                         script {
                             docker.build("bharathoptdocker/python_producer", "-f producer/Dockerfile .")
-                            sh 'docker ps'
                         }
                     }
                 }
@@ -78,36 +93,65 @@ pipeline {
         }
 
         stage('Docker Publish') {
-    steps {
-        script {
-            // Docker login using credentials
-            withCredentials([usernamePassword(credentialsId: 'bkdockerid', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+            steps {
+                script {
+                    // Docker login using credentials
+                    withCredentials([usernamePassword(credentialsId: 'bkdockerid', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
 
-                // Check if the producer image exists
-                def producerImageExists = sh(script: 'docker images -q bharathoptdocker/python-producer', returnStatus: true).trim() == '0' ? false : true
+                        // Get the list of services from the Docker Compose file
+                        def serviceList = sh(script: 'docker-compose -f docker-compose.yml config --services', returnStdout: true).trim().split('\n')
 
-                if (!producerImageExists) {
-                    error 'Producer image does not exist. Build the image first.'
+                        serviceList.each { service ->
+                            if (service in ['rabbitmq', 'mysql_db']) {
+                                echo "Skipping ${service} service"
+                            } else {
+                                // Publish Docker images for the service
+                                def buildId = env.BUILD_ID
+                                def imageName = "bharathoptdocker/python-${service}"
+                                def imageNameWithTag = "${imageName}:${buildId}"
+                                def imageNameWithLatest = "${imageName}:latest"
+
+                                // Ensure the image exists before tagging and pushing
+                                def imageExists = sh(script: "docker images -q ${imageName}", returnStatus: true) == 0
+                                if (imageExists) {
+                                    sh "docker tag ${imageName} ${imageNameWithTag}"
+                                    sh "docker push ${imageNameWithTag}"
+                                    sh "docker tag ${imageName} ${imageNameWithLatest}"
+                                    sh "docker push ${imageNameWithLatest}"
+                                } else {
+                                    echo "Image ${imageName} does not exist, skipping."
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+        }
 
-                // Get the list of services from the Docker Compose file
-                def serviceList = sh(script: 'docker-compose -f docker-compose.yml config --services', returnStdout: true).trim().split('\n')
+        stage('Push Producer Image') {
+            steps {
+                script {
+                    // Docker login using credentials
+                    withCredentials([usernamePassword(credentialsId: 'bkdockerid', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
 
-                serviceList.each { service ->
-                    if (service in ['rabbitmq', 'mysql_db']) {
-                        echo "Skipping ${service} service"
-                    } else {
-                        // Publish Docker images for the service
+                        // Tag and push the producer image separately
                         def buildId = env.BUILD_ID
-                        def imageName = "bharathoptdocker/python-${service}"
+                        def imageName = "bharathoptdocker/python_producer"
                         def imageNameWithTag = "${imageName}:${buildId}"
                         def imageNameWithLatest = "${imageName}:latest"
 
-                        sh "docker tag ${imageName} ${imageNameWithTag}"
-                        sh "docker push ${imageNameWithTag}"
-                        sh "docker tag ${imageName} ${imageNameWithLatest}"
-                        sh "docker push ${imageNameWithLatest}"
+                        // Ensure the image exists before tagging and pushing
+                        def imageExists = sh(script: "docker images -q ${imageName}", returnStatus: true) == 0
+                        if (imageExists) {
+                            sh "docker tag ${imageName} ${imageNameWithTag}"
+                            sh "docker push ${imageNameWithTag}"
+                            sh "docker tag ${imageName} ${imageNameWithLatest}"
+                            sh "docker push ${imageNameWithLatest}"
+                        } else {
+                            echo "Image ${imageName} does not exist, skipping."
+                        }
                     }
                 }
             }
