@@ -42,7 +42,7 @@ pipeline {
                 stage('Build Consumer One') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer_one", "-f consumer_one/Dockerfile .")
+                            docker.build("optit-lab-python-microservice-example-consumer_one", "-f consumer_one/Dockerfile .")
                         }
                     }
                 }
@@ -50,7 +50,7 @@ pipeline {
                 stage('Build Consumer Two') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer_two", "-f consumer_two/Dockerfile .")
+                            docker.build("optit-lab-python-microservice-example-consumer_two", "-f consumer_two/Dockerfile .")
                         }
                     }
                 }
@@ -58,7 +58,7 @@ pipeline {
                 stage('Build Consumer Three') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer_three", "-f consumer_three/Dockerfile .")
+                            docker.build("optit-lab-python-microservice-example-consumer_three", "-f consumer_three/Dockerfile .")
                         }
                     }
                 }
@@ -66,7 +66,7 @@ pipeline {
                 stage('Build Consumer Four') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python-consumer_four", "-f consumer_four/Dockerfile .")
+                            docker.build("optit-lab-python-microservice-example-consumer_four", "-f consumer_four/Dockerfile .")
                         }
                     }
                 }
@@ -74,7 +74,7 @@ pipeline {
                 stage('Build Producer') {
                     steps {
                         script {
-                            docker.build("bharathoptdocker/python_producer", "-f producer/Dockerfile .")
+                            docker.build("optit-lab-python-microservice-example-producer", "-f producer/Dockerfile .")
                             sh 'docker ps'
                         }
                     }
@@ -109,14 +109,21 @@ pipeline {
                             } else {
                                 // Publish Docker images for the service
                                 def buildId = env.BUILD_ID
-                                def imageName = "bharathoptdocker/python-${service}"
+                                def imageName = "optit-lab-python-microservice-example-${service}"
                                 def imageNameWithTag = "${imageName}:${buildId}"
                                 def imageNameWithLatest = "${imageName}:latest"
 
-                                sh "docker tag ${imageName} ${imageNameWithTag}"
-                                sh "docker push ${imageNameWithTag}"
-                                sh "docker tag ${imageName} ${imageNameWithLatest}"
-                                sh "docker push ${imageNameWithLatest}"
+                                // Check if the image was built successfully
+                                def imageExists = sh(script: "docker images -q ${imageName}", returnStatus: true) == 0
+                                
+                                if (imageExists) {
+                                    sh "docker tag ${imageName} ${imageNameWithTag}"
+                                    sh "docker push ${imageNameWithTag}"
+                                    sh "docker tag ${imageName} ${imageNameWithLatest}"
+                                    sh "docker push ${imageNameWithLatest}"
+                                } else {
+                                    echo "Image ${imageName} does not exist. Skipping push."
+                                }
                             }
                         }
                     }
