@@ -1,13 +1,18 @@
 pipeline {
     agent any
 
+    tools {
+        // Specify the Git tool installation name here if necessary (configured in Jenkins)
+        git 'Name_of_Your_Git_Installation' // Optional if you need a specific Git version
+    }
+
     stages {
         stage('Checkout') {
             steps {
                 script {
                     git branch: 'main',
-                    credentialsId: 'bharath',
-                    url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                        credentialsId: 'bharath',
+                        url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
             }
         }
