@@ -1,32 +1,57 @@
 pipeline {
     agent any
-      
+
     stages {
         stage('Checkout') {
             steps {
                 script {
                     git branch: 'main',
-                        credentialsId: 'bharath',
-                        url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                    credentialsId: 'bharath',
+                    url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
             }
         }
-  
-    stage('Deploy to Kubernetes') {
+
+        stage('Deploy and Update Services') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
-                        sh 'kubectl apply -f kubernetes/manifest/producer/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/producer/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_one/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_one/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_two/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_two/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_three/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_three/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_four/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest/consumer_four/service.yaml'
-                    }
+                    def manifestsDir = 'kubernetes/manifest'
+
+                    // Delete deployments
+                    sh "kubectl delete -f ${manifestsDir}/producer/producer-deployment.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_one/deployment.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_two/deployment.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_three/deployment.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_four/deployment.yaml"
+
+                    // Apply deployments
+                    sh "kubectl apply -f ${manifestsDir}/producer/producer-deployment.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_one/deployment.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_two/deployment.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_three/deployment.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_four/deployment.yaml"
+                }
+            }
+        }
+
+        stage('Deploy and Update Services - Part 2') {
+            steps {
+                script {
+                    def manifestsDir = 'kubernetes/manifest'
+
+                    // Delete services
+                    sh "kubectl delete -f ${manifestsDir}/producer/producer-service.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_one/service.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_two/service.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_three/service.yaml"
+                    sh "kubectl delete -f ${manifestsDir}/consumer_four/service.yaml"
+
+                    // Apply services
+                    sh "kubectl apply -f ${manifestsDir}/producer/producer-service.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_one/service.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_two/service.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_three/service.yaml"
+                    sh "kubectl apply -f ${manifestsDir}/consumer_four/service.yaml"
                 }
             }
         }
