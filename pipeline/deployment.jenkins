@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+environment {
+        
+        KUBERNETES_NAMESPACE = "bktest"
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -11,32 +14,22 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy and Update Deployment') {
+stage('Deploy') {
             steps {
                 script {
-                    def manifestsDir = 'kubernetes/manifest'
-
-                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
-                        // Delete deployments
-                        sh "kubectl delete -f ${manifestsDir}/producer/producer-deployment.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_one/deployment.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_two/deployment.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_three/deployment.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_four/deployment.yaml -n bktest"
-
-                        // Apply deployments
-                        sh "kubectl apply -f ${manifestsDir}/producer/producer-deployment.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_one/deployment.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_two/deployment.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_three/deployment.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_four/deployment.yaml -n bktest"
+                    withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
+                        def services = ['producer', 'consumer_one', 'consumer_two', 'consumer_three', 'consumer_four']
+                        services.each { service ->
+                            sh "kubectl --kubeconfig=${KUBECONFIG} set image deployment/${service}-deployment ${service}=${DOCKER_REGISTRY}/${service}:latest -n ${KUBERNETES_NAMESPACE}"
+                        }
                     }
                 }
             }
         }
+    }
+        
 
         
         }
     }
-}
+
