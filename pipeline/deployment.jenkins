@@ -16,16 +16,16 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
-                        sh 'kubectl apply -f kubernetes/manifest//producer/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//producer/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_one/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_one/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_two/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_two/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_three/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_three/service.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_four/deployment.yaml'
-                        sh 'kubectl apply -f kubernetes/manifest//consumer_four/service.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/producer/deployment.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/producer/service.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_one/deployment.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_one/service.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_two/deployment.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_two/service.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_three/deployment.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_three/service.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_four/deployment.yaml'
+                        sh 'kubectl apply -f kubernetes/manifest/consumer_four/service.yaml'
                     }
                 }
             }
