@@ -22,7 +22,7 @@ pipeline {
                 sh 'docker ps'
             }
         }
-        
+
         stage('Tag Docker Images') {
             steps {
                 sh 'docker tag optit-lab-python-microservice-example-producer:latest bharathoptdocker/python-producer:1'
@@ -49,12 +49,12 @@ pipeline {
                 }
             }
         }
-    }
-}
 
-stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
                 // Apply Kubernetes manifests
                 sh 'kubectl apply -f kubernetes/manifest/mysql/deployment.yaml -f kubernetes/manifest/mysql/mysql-secret.yaml -f kubernetes/manifest/mysql/service.yaml -f kubernetes/manifest/mysql/mysql-pvc.yaml'
             }
         }
+    }
+}
