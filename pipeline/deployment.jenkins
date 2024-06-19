@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    git branch: 'main',
+                    git branch: 'bktest',
                     credentialsId: 'bharath',
                     url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
@@ -19,18 +19,18 @@ pipeline {
 
                     withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
                         // Delete deployments
-                        sh "kubectl delete -f ${manifestsDir}/producer/producer-deployment.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_one/deployment.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_two/deployment.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_three/deployment.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_four/deployment.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/producer/producer-deployment.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_one/deployment.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_two/deployment.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_three/deployment.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_four/deployment.yaml -n bktest"
 
                         // Apply deployments
-                        sh "kubectl apply -f ${manifestsDir}/producer/producer-deployment.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_one/deployment.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_two/deployment.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_three/deployment.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_four/deployment.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/producer/producer-deployment.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_one/deployment.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_two/deployment.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_three/deployment.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_four/deployment.yaml -n bktest"
                     }
                 }
             }
@@ -43,18 +43,18 @@ pipeline {
 
                     withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
                         // Delete services
-                        sh "kubectl delete -f ${manifestsDir}/producer/producer-service.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_one/service.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_two/service.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_three/service.yaml -n my-namespace"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_four/service.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/producer/producer-service.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_one/service.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_two/service.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_three/service.yaml -n bktest"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_four/service.yaml -n bktest"
 
                         // Apply services
-                        sh "kubectl apply -f ${manifestsDir}/producer/producer-service.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_one/service.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_two/service.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_three/service.yaml -n my-namespace"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_four/service.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/producer/producer-service.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_one/service.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_two/service.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_three/service.yaml -n bktest"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_four/service.yaml -n bktest"
                     }
                 }
             }
