@@ -1,20 +1,21 @@
 pipeline {
     agent any
-environment {
-         KUBECONFIG_CREDENTIALS_ID = "poc-kube-cluster-cred-1"
+    environment {
+        KUBECONFIG_CREDENTIALS_ID = "poc-kube-cluster-cred-1"
         KUBERNETES_NAMESPACE = "bktest"
+        DOCKER_REGISTRY = "your-docker-registry"  // Add your Docker registry here
     }
     stages {
         stage('Checkout') {
             steps {
                 script {
                     git branch: 'bktest',
-                    credentialsId: 'bharath',
-                    url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                        credentialsId: 'bharath',
+                        url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
             }
         }
-stage('Deploy') {
+        stage('Deploy') {
             steps {
                 script {
                     withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
@@ -27,9 +28,4 @@ stage('Deploy') {
             }
         }
     }
-        
-
-        
-        }
-    }
-
+}
