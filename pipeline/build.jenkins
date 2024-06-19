@@ -6,8 +6,8 @@ pipeline {
             steps {
                 script {
                     git branch: 'main',
-                        credentialsId: 'bharath',
-                        url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                    credentialsId: 'bharath',
+                    url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
             }
         }
@@ -50,17 +50,18 @@ pipeline {
             }
         }
 
-stage('Deploy to Kubernetes') {
-    steps {
-        script {
-            withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
-                // Apply Kubernetes manifests in the specified namespace
-                sh 'kubectl apply -f kubernetes/manifest/mysql/service.yaml -n my-namespace'
-                sh 'kubectl apply -f kubernetes/manifest/mysql/my-storage.yaml/mysql-pvc.yaml -n my-namespace'
-                sh 'kubectl apply -f kubernetes/manifest/mysql/mysql-secret.yaml -n my-namespace'
-                sh 'kubectl apply -f kubernetes/manifest/mysql/deployment.yaml -n my-namespace'
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Apply Kubernetes manifests in the specified namespace
+                        sh 'kubectl apply -f kubernetes/manifest/mysql/service.yaml -n my-namespace'
+                        sh 'kubectl apply -f kubernetes/manifest/mysql/mysql-storage.yaml/mysql-pvc.yaml -n my-namespace'
+                        sh 'kubectl apply -f kubernetes/manifest/mysql/mysql-secret.yaml -n my-namespace'
+                        sh 'kubectl apply -f kubernetes/manifest/mysql/deployment.yaml -n my-namespace'
+                    }
+                }
             }
         }
     }
 }
-
