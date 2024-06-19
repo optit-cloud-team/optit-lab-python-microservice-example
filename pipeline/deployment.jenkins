@@ -1,7 +1,7 @@
 pipeline {
     agent any
 environment {
-         KUBECONFIG_CREDENTIALS_ID = "kubeconfig-credentials"
+         KUBECONFIG_CREDENTIALS_ID = "poc-kube-cluster-cred-1"
         KUBERNETES_NAMESPACE = "bktest"
     }
     stages {
