@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: consumer-three-deployment
-  namespace: my-namespace
+  namespace: bktest
 spec:
   replicas: 1
   selector:
