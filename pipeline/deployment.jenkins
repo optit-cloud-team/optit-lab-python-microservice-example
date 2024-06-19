@@ -36,28 +36,7 @@ pipeline {
             }
         }
 
-        stage('Deploy and Update Services') {
-            steps {
-                script {
-                    def manifestsDir = 'kubernetes/manifest'
-
-                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
-                        // Delete services
-                        sh "kubectl delete -f ${manifestsDir}/producer/producer-service.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_one/service.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_two/service.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_three/service.yaml -n bktest"
-                        sh "kubectl delete -f ${manifestsDir}/consumer_four/service.yaml -n bktest"
-
-                        // Apply services
-                        sh "kubectl apply -f ${manifestsDir}/producer/producer-service.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_one/service.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_two/service.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_three/service.yaml -n bktest"
-                        sh "kubectl apply -f ${manifestsDir}/consumer_four/service.yaml -n bktest"
-                    }
-                }
-            }
+        
         }
     }
 }
