@@ -5,7 +5,7 @@ services:
     image: rabbitmq:3.13-management
     ports:
       - "5672:5672"
-      - "15672:15672"
+      - "15673:15673"
     expose:
       - "5672"
       - "15672"
@@ -14,7 +14,7 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
 
   mysql_db:
-    image: mysql:8.0
+    image: mysql:5.7
     cap_add:
       - SYS_NICE
     restart: always

@@ -15,7 +15,6 @@ spec:
     spec:
       containers:
         - name: consumer-one
-          image: bharathoptdocker/python-consumer-one:latest
+          image: bharathoptdocker/python-consumer-one:1
           ports:
             - containerPort: 5000
----

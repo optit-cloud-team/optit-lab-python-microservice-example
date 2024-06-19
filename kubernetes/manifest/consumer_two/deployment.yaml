@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: consumer-two
-          image: bharathoptdocker/python-consumer-two:latest
+          image: bharathoptdocker/python-consumer-two:1
           ports:
             - containerPort: 5000

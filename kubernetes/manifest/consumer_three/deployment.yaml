@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: consumer-three
-          image: bharathoptdocker/python-consumer-three:latest
+          image: bharathoptdocker/python-consumer-three:1
           ports:
             - containerPort: 5000

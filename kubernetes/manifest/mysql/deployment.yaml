@@ -4,6 +4,7 @@ metadata:
   name: mysql
   namespace: my-namespace
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: mysql
@@ -15,16 +16,13 @@ spec:
         app: mysql
     spec:
       containers:
-      - image: mysql:latest
-        name: mysql
+      - name: mysql
+        image: mysql:5.7
         env:
         - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: password
+          value: "pesuims"
         ports:
-        - containerPort: 3306
+        - containerPort: 3309
           name: mysql
         volumeMounts:
         - name: mysql-persistent-storage
@@ -32,21 +30,5 @@ spec:
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
-          claimName: mysql-pv-claim
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mysql
-  template:
-    metadata:
-      labels:
-        app: mysql
-    spec:
-      containers:
-        - name: mysql
-          image: mysql:5.7
-          ports:
-            - containerPort: 3306
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: "pesuims"
+          claimName: mysql-pvc
+

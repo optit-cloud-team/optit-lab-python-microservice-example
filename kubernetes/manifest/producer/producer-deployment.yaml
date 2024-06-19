@@ -15,7 +15,6 @@ spec:
     spec:
       containers:
         - name: producer
-          image: raorajath/python-producer:latest
+          image: bharathoptdocker/python-producer:1
           ports:
             - containerPort: 5000
----
