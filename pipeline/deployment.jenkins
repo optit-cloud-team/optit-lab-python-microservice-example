@@ -12,7 +12,7 @@ pipeline {
             }
         }
 
-        stage('Deploy and Update Services') {
+        stage('Deploy and Update Deployment') {
             steps {
                 script {
                     def manifestsDir = 'kubernetes/manifest'
@@ -36,7 +36,7 @@ pipeline {
             }
         }
 
-        stage('Deploy and Update Services - Part 2') {
+        stage('Deploy and Update Services') {
             steps {
                 script {
                     def manifestsDir = 'kubernetes/manifest'
