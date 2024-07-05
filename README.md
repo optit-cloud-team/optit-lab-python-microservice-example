@@ -272,4 +272,491 @@ The services are containerized using Docker. The `docker-compose.yml` file defin
 - The health check consumer logs the received messages, while the item creation, stock management, and order processing consumers interact with the MySQL database.
 
 # DEVOPS STEPS AND FILES
+### DevOps Steps and Pipeline Configuration
+
+#### Kubernetes Manifests
+
+The following manifests are used to deploy the services and applications in Kubernetes:
+
+- **Namespaces:**
+  - `my-namespace.yaml`
+    ```yaml
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: my-namespace
+    ```
+
+- **MySQL:**
+  - `mysql-storage.yaml/mysql-pvc.yaml`
+    ```yaml
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: mysql-pvc
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi  # Adjust size as per your requirements
+    ```
+
+  - `deployment.yaml`
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: mysql
+      namespace: my-namespace
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: mysql
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            app: mysql
+        spec:
+          containers:
+          - name: mysql
+            image: mysql:5.7
+            env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "pesuims"
+            ports:
+            - containerPort: 3309
+              name: mysql
+            volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+          volumes:
+          - name: mysql-persistent-storage
+            persistentVolumeClaim:
+              claimName: mysql-pvc
+    ```
+
+  - `mysql-secret.yaml`
+
+  - `service.yaml`
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: mysql-service
+      namespace: my-namespace
+    spec:
+      selector:
+        app: mysql
+      ports:
+        - protocol: TCP
+          port: 3306
+          targetPort: 3306
+      type: ClusterIP
+    ```
+
+- **Producer:**
+  - `producer-deployment.yaml`
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: producer-deployment
+      namespace: my-namespace
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: producer
+      template:
+        metadata:
+          labels:
+            app: producer
+        spec:
+          containers:
+          - name: producer
+            image: bharathoptdocker/python-producer:1
+            ports:
+            - containerPort: 5000
+    ```
+
+  - `producer-service.yaml`
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: producer-service
+      namespace: my-namespace
+    spec:
+      selector:
+        app: producer
+      ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 5000
+      type: ClusterIP
+    ```
+
+- **Consumers:**
+
+  Each consumer follows a similar structure. Below is the example for `consumer_one`:
+
+  - `deployment.yaml`
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: consumer-one-deployment
+      namespace: my-namespace
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: consumer-one
+      template:
+        metadata:
+          labels:
+            app: consumer-one
+        spec:
+          containers:
+          - name: consumer-one
+            image: bharathoptdocker/python-consumer-one
+            ports:
+            - containerPort: 5000
+    ```
+
+  - `service.yaml`
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: consumer-one-service
+      namespace: my-namespace
+    spec:
+      selector:
+        app: consumer-one
+      ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 5000
+      type: ClusterIP
+    ```
+
+  The same structure is repeated for `consumer_two`, `consumer_three`, and `consumer_four` with respective image names and metadata.
+
+#### Jenkins Pipeline Configuration
+
+The Jenkins pipeline automates the deployment process, including Docker image building, tagging, pushing to Docker Hub, and deploying to Kubernetes.
+
+- **Pipeline Definition:**
+  
+  **Build and Deploy Pipeline:**
+  ```groovy
+  pipeline {
+      agent any
+
+      stages {
+          stage('Checkout') {
+              steps {
+                  script {
+                      git branch: 'main',
+                      credentialsId: 'bharath',
+                      url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                  }
+              }
+          }
+
+          stage('Deploy with Docker Compose') {
+              steps {
+                  // Ensure Docker Compose is installed
+                  sh 'docker-compose --version'
+
+                  // Deploy the application using Docker Compose
+                  sh 'docker-compose up --build -d'
+                  sh 'docker ps'
+              }
+          }
+
+          stage('Tag Docker Images') {
+              steps {
+                  sh 'docker tag optit-lab-python-microservice-example-producer:latest bharathoptdocker/python-producer:1'
+                  sh 'docker tag optit-lab-python-microservice-example-consumer_one:latest bharathoptdocker/python-consumer-one:1'
+                  sh 'docker tag optit-lab-python-microservice-example-consumer_two:latest bharathoptdocker/python-consumer-two:1'
+                  sh 'docker tag optit-lab-python-microservice-example-consumer_three:latest bharathoptdocker/python-consumer-three:1'
+                  sh 'docker tag optit-lab-python-microservice-example-consumer_four:latest bharathoptdocker/python-consumer-four:1'
+              }
+          }
+
+          stage('Docker Publish') {
+              steps {
+                  script {
+                      // Docker login using credentials
+                      withCredentials([usernamePassword(credentialsId: 'bkdockerid', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                          sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+
+                          sh 'docker push bharathoptdocker/python-producer:1'
+                          sh 'docker push bharathoptdocker/python-consumer-one:1'
+                          sh 'docker push bharathoptdocker/python-consumer-two:1'
+                          sh 'docker push bharathoptdocker/python-consumer-three:1'
+                          sh 'docker push bharathoptdocker/python-consumer-four:1'
+                      }
+                  }
+              }
+          }
+
+          stage('Deploy to Kubernetes') {
+              steps {
+                  script {
+                      withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                          // Apply Kubernetes manifests in the specified namespace
+                          sh 'kubectl apply -f kubernetes/manifest/mysql/service.yaml -n my-namespace'
+                          sh 'kubectl apply -f kubernetes/manifest/mysql/mysql-storage.yaml/mysql-pvc.yaml -n my-namespace'
+                          sh 'kubectl apply -f kubernetes/manifest/mysql/mysql-secret.yaml -n my-namespace'
+                          sh 'kubectl apply -f kubernetes/manifest/mysql/deployment.yaml -n my-namespace'
+                      }
+                  }
+              }
+          }
+      }
+  }
+  ```
+
+  **Deployment and Update Pipeline:**
+  ```groovy
+  pipeline {
+      agent any
+
+      stages {
+          stage('Checkout') {
+              steps {
+                  script {
+                      git branch: 'main',
+                      credentialsId: 'bharath',
+                      url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                  }
+              }
+          }
+
+          stage('Deploy and Update Deployment') {
+              steps {
+                  script {
+                      def manifestsDir = 'kubernetes/manifest'
+
+                      withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                          // Delete deployments
+                          sh "kubectl delete -f ${manifestsDir}/producer/producer-deployment.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_one/deployment.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_two/deployment.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_three/deployment.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_four/deployment.yaml -n my-namespace"
+
+                          // Apply deployments
+                          sh "kubectl apply -f ${manifestsDir}/producer/producer-deployment.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_one/deployment.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_two/deployment.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_three/deployment.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_four/deployment.yaml -n my-namespace"
+                      }
+                  }
+              }
+          }
+
+          stage('Deploy and Update Services') {
+              steps {
+                  script {
+                      def manifestsDir = 'kubernetes/manifest'
+
+                      withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                          // Delete services
+                          sh "kubectl delete -f ${man
+
+ifestsDir}/producer/producer-service.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_one/service.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_two/service.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_three/service.yaml -n my-namespace"
+                          sh "kubectl delete -f ${manifestsDir}/consumer_four/service.yaml -n my-namespace"
+
+                          // Apply services
+                          sh "kubectl apply -f ${manifestsDir}/producer/producer-service.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_one/service.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_two/service.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_three/service.yaml -n my-namespace"
+                          sh "kubectl apply -f ${manifestsDir}/consumer_four/service.yaml -n my-namespace"
+                      }
+                  }
+              }
+          }
+      }
+  } ```
+
+### Additional Notes and Error Handling
+
+- **MySQL Configuration:**
+  - Ensure MySQL is configured correctly for the application to function.
+  - If deploying in a lab environment, use MySQL version 5.7, which is suitable for lab CPU configurations.
+  - Common errors during deployment are often related to MySQL configuration. Check CPU compatibility and deployment methods.
+
+- **Automation:**
+  - After configuring Kubernetes, proceed with automation. Jenkins is used here, but GitHub Actions or other CI/CD tools can be used based on your preference.
+  - Ensure detailed steps are provided for each stage of the pipeline to avoid confusion during the deployment process.
+
+
+[addtinal update and recent imporvent].
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    git branch: 'main',
+                    credentialsId: 'bharath',
+                    url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                }
+            }
+        }
+
+        stage('Deploy and Update Resources') {
+            steps {
+                script {
+                    def manifestsDir = 'kubernetes/manifest'
+                    def deployments = ['producer/producer-deployment.yaml',
+                                        'consumer_one/deployment.yaml',
+                                        'consumer_two/deployment.yaml',
+                                        'consumer_three/deployment.yaml',
+                                        'consumer_four/deployment.yaml']
+                    def services = ['producer/producer-service.yaml',
+                                    'consumer_one/service.yaml',
+                                    'consumer_two/service.yaml',
+                                    'consumer_three/service.yaml',
+                                    'consumer_four/service.yaml']
+
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Delete and Apply Deployments
+                        deployments.each { deployment ->
+                            sh "kubectl delete -f ${manifestsDir}/${deployment} -n my-namespace || true"
+                            sh "kubectl apply -f ${manifestsDir}/${deployment} -n my-namespace"
+                        }
+
+                        // Delete and Apply Services
+                        services.each { service ->
+                            sh "kubectl delete -f ${manifestsDir}/${service} -n my-namespace || true"
+                            sh "kubectl apply -f ${manifestsDir}/${service} -n my-namespace"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# you can also use above pipeline while deployment automation in jenkins. the file contains basic and more understandable code that will help bigginers.
+
+## Jenkins Pipeline Overview
+
+The Jenkins pipeline automates the deployment process for the microservices. It handles the checkout of the code from the repository and the deployment of the application components to the Kubernetes cluster.
+
+## Recent Improvements to the Jenkins Pipeline
+
+### Overview of Improvements
+
+The Jenkins pipeline has been optimized for better efficiency, maintainability, and robustness. Below are the detailed improvements made to the pipeline and the reasons behind them:
+
+### 1. Combined Deployment and Service Stages
+
+**Before:**
+Separate stages for deployments and services.
+
+**After:**
+Combined into one stage to reduce redundancy and simplify the pipeline.
+
+**Reason:**
+Combining similar operations reduces duplication and makes the pipeline easier to maintain. This change simplifies the pipeline structure and improves readability.
+
+**Old Pipeline:**
+sh "kubectl delete -f kubernetes/manifest/producer/producer-deployment.yaml -n my-namespace"
+sh "kubectl apply -f kubernetes/manifest/producer/producer-deployment.yaml -n my-namespace"
+sh "kubectl delete -f kubernetes/manifest/consumer_one/deployment.yaml -n my-namespace"
+sh "kubectl apply -f kubernetes/manifest/consumer_one/deployment.yaml -n my-namespace"
+
+New Pipeline:
+
+def deployments = ['producer/producer-deployment.yaml', 'consumer_one/deployment.yaml', 'consumer_two/deployment.yaml', 'consumer_three/deployment.yaml', 'consumer_four/deployment.yaml']
+deployments.each { deployment ->
+    sh "kubectl delete -f ${manifestsDir}/${deployment} -n my-namespace || true"
+    sh "kubectl apply -f ${manifestsDir}/${deployment} -n my-namespace"
+}
+
+# Example Enhanced Jenkinsfile with Parameters and Notifications
+
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'NAMESPACE', defaultValue: 'my-namespace', description: 'Kubernetes Namespace')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Git Branch')
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker Image Tag')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    git branch: params.BRANCH,
+                        credentialsId: 'bharath',
+                        url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
+                }
+            }
+        }
+
+        stage('Deploy and Update Resources') {
+            steps {
+                script {
+                    def manifestsDir = 'kubernetes/manifest'
+                    def deployments = ['producer/producer-deployment.yaml',
+                                        'consumer_one/deployment.yaml',
+                                        'consumer_two/deployment.yaml',
+                                        'consumer_three/deployment.yaml',
+                                        'consumer_four/deployment.yaml']
+                    def services = ['producer/producer-service.yaml',
+                                    'consumer_one/service.yaml',
+                                    'consumer_two/service.yaml',
+                                    'consumer_three/service.yaml',
+                                    'consumer_four/service.yaml']
+
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Delete and Apply Deployments
+                        deployments.each { deployment ->
+                            sh "kubectl delete -f ${manifestsDir}/${deployment} -n ${params.NAMESPACE} || true"
+                            sh "kubectl apply -f ${manifestsDir}/${deployment} -n ${params.NAMESPACE}"
+                        }
+
+                        // Delete and Apply Services
+                        services.each { service ->
+                            sh "kubectl delete -f ${manifestsDir}/${service} -n ${params.NAMESPACE} || true"
+                            sh "kubectl apply -f ${manifestsDir}/${service} -n ${params.NAMESPACE}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'team@example.com',
+                 subject: 'Pipeline Success',
+                 body: 'The pipeline succeeded.'
+        }
+        failure {
+            mail to: 'team@example.com',
+                 subject: 'Pipeline Failure',
+                 body: 'The pipeline failed.'
+        }
+    }
+}
+
 
