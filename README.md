@@ -759,4 +759,26 @@ pipeline {
     }
 }
 
+### Summary of Improvements that you can try.
+### Summary of Improvements
+
+| **Improvement**           | **Current**                                                                 | **Improvement**                                                                                   |
+|--------------------------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| **Namespace Management** | Creating a custom namespace                                                | Use the default namespace for simplicity.                                                        |
+| **Persistent Volume Claim (PVC)** | No `StorageClass` or Secrets                                      | Specify `StorageClass` and use Secrets for sensitive data.                                        |
+| **MySQL Configuration** | Hardcoded `MYSQL_ROOT_PASSWORD`                                             | Use Kubernetes Secrets for sensitive data.                                                        |
+| **CI/CD Pipeline**      | Combined build, push, deploy steps                                          | Separate stages for build, push, deploy, and add linting/testing.                                |
+| **Service Configurations**| Basic service configurations                                              | Add annotations for monitoring/logging.                                                            |
+| **Deployment Strategies**| Recreate strategy                                                          | Use `RollingUpdate` for zero-downtime deployments.                                                |
+| **Unnecessary Elements**| Hardcoded secrets, static image versions, manual commands                   | Move secrets to Kubernetes Secrets, use versioned tags, automate deployment steps.              |
+
+### How to Use This Table
+
+- **Namespace Management**: Simplify by using the default namespace.
+- **Persistent Volume Claim (PVC)**: Add `StorageClass` and manage sensitive data securely.
+- **MySQL Configuration**: Handle sensitive data using Kubernetes Secrets.
+- **CI/CD Pipeline**: Improve by separating concerns and adding steps for quality checks.
+- **Service Configurations**: Enhance configurations with additional features for better management.
+- **Deployment Strategies**: Use modern deployment strategies for smoother updates.
+- **Unnecessary Elements**: Remove outdated practices for a more robust and automated deployment process.
 
