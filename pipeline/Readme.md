@@ -134,7 +134,6 @@ pipeline {
                         // Deploy Spring Boot
                         sh "kubectl apply -f recipes/kubernetes/manifests/springboot-deployment.yaml -n spring-example"
                         sh "kubectl apply -f recipes/kubernetes/manifests/springboot-service.yaml -n spring-example"
-                        sh "kubectl apply -f recipes/kubernetes/manifests/ingress.yaml -n spring-example"
                     }
                 }
             }
