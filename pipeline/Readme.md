@@ -1,6 +1,6 @@
 ## Jenkins Pipelines for Recipe Management System
 
-This section covers the Jenkins pipelines used for building Docker images and deploying the Recipe Management System to Kubernetes.
+This section covers the Jenkins pipelines used for building Docker images and deploying the application to Kubernetes.
 
 ### Table of Contents
 
@@ -121,28 +121,55 @@ pipeline {
                 script {
                     git branch: 'main',
                     credentialsId: 'bharath',
-                    url: 'https://github.com/optit-cloud-team/optit-lab-springmvc-example.git'
+                    url: 'https://github.com/optit-cloud-team/optit-lab-python-microservice-example.git'
                 }
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy and Update Deployment') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                    def manifestsDir = 'kubernetes/manifest'
 
-                        // Deploy Spring Boot
-                        sh "kubectl apply -f recipes/kubernetes/manifests/springboot-deployment.yaml -n spring-example"
-                        sh "kubectl apply -f recipes/kubernetes/manifests/springboot-service.yaml -n spring-example"
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Delete deployments
+                        sh "kubectl delete -f ${manifestsDir}/producer/producer-deployment.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_one/deployment.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_two/deployment.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_three/deployment.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_four/deployment.yaml -n my-namespace"
+
+                        // Apply deployments
+                        sh "kubectl apply -f ${manifestsDir}/producer/producer-deployment.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_one/deployment.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_two/deployment.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_three/deployment.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_four/deployment.yaml -n my-namespace"
                     }
                 }
             }
         }
 
-        stage('Verify Kubernetes Deployment') {
+        stage('Deploy and Update Services') {
             steps {
                 script {
-                    sh "kubectl get all -n spring-example"
+                    def manifestsDir = 'kubernetes/manifest'
+
+                    withCredentials([file(credentialsId: 'poc-kube-cluster-cred-1', variable: 'KUBECONFIG')]) {
+                        // Delete services
+                        sh "kubectl delete -f ${manifestsDir}/producer/producer-service.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_one/service.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_two/service.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_three/service.yaml -n my-namespace"
+                        sh "kubectl delete -f ${manifestsDir}/consumer_four/service.yaml -n my-namespace"
+
+                        // Apply services
+                        sh "kubectl apply -f ${manifestsDir}/producer/producer-service.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_one/service.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_two/service.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_three/service.yaml -n my-namespace"
+                        sh "kubectl apply -f ${manifestsDir}/consumer_four/service.yaml -n my-namespace"
+                    }
                 }
             }
         }
@@ -153,8 +180,8 @@ pipeline {
 #### Stages Explained
 
 - **Checkout**: Checks out the code from the `main` branch of the GitHub repository using the specified credentials.
-- **Deploy to Kubernetes**: Applies the Kubernetes manifests to deploy the Spring Boot application and the Ingress resource in the `spring-example` namespace.
-- **Verify Kubernetes Deployment**: Checks the status of all resources in the `spring-example` namespace.
+- **Deploy to Kubernetes**: Applies the Kubernetes manifests to deploy the Spring Boot application and the Ingress resource in the `my-namespace` namespace.
+- **Verify Kubernetes Deployment**: Checks the status of all resources in the `my-namespace` namespace.
 
 ---
 
