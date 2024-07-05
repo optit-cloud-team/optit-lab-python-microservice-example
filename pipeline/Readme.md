@@ -12,7 +12,7 @@ This section covers the Jenkins pipelines used for building Docker images and de
 
 ### Overview
 
-The Jenkins pipelines automate the process of building Docker images and deploying the Recipe Management System to Kubernetes. 
+The Jenkins pipelines automate the process of building Docker images and deploying the application to Kubernetes. 
 
 - **`build.jenkins`**: Handles the building of Docker images, tagging, publishing to Docker Hub, and initial deployment to Kubernetes.
 - **`deployment.jenkins`**: Manages the deployment of the Spring Boot application and verification of the Kubernetes deployment.
@@ -46,7 +46,7 @@ pipeline {
                 sh 'docker-compose --version'
 
                 // Deploy the application using Docker Compose
-                sh 'docker-compose up --build -d'
+                sh 'docker-compose pull --build -d'
                 sh 'docker ps'
             }
         }
