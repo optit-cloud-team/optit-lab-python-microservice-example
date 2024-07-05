@@ -272,6 +272,9 @@ The services are containerized using Docker. The `docker-compose.yml` file defin
 - The health check consumer logs the received messages, while the item creation, stock management, and order processing consumers interact with the MySQL database.
 
 # DEVOPS STEPS AND FILES
+![image](https://github.com/optit-cloud-team/optit-lab-python-microservice-example/assets/128474801/8e28bc2d-0dae-48fb-9916-79efc82274aa)
+
+
 ### DevOps Steps and Pipeline Configuration
 
 #### Kubernetes Manifests
