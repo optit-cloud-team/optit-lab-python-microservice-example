@@ -274,7 +274,6 @@ The services are containerized using Docker. The `docker-compose.yml` file defin
 # DEVOPS STEPS AND FILES
 ![image](https://github.com/optit-cloud-team/optit-lab-python-microservice-example/assets/128474801/8e28bc2d-0dae-48fb-9916-79efc82274aa)
 
-
 ### DevOps Steps and Pipeline Configuration
 
 #### Kubernetes Manifests
